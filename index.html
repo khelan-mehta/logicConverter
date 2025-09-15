@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boolean Expression to CMOS Circuit Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 1.1em;
+        }
+
+        input[type="text"] {
+            padding: 12px 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .examples {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .examples h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .examples ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .examples li {
+            margin: 5px 0;
+            color: #424242;
+            font-family: monospace;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .circuit-container {
+            margin-top: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+            min-height: 400px;
+        }
+
+        .circuit-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #495057;
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        #circuitSvg {
+            width: 100%;
+            height: 100%;
+            min-height: 350px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            margin-top: 15px;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #bee5eb;
+            margin-top: 15px;
+        }
+
+        .transistor {
+            cursor: pointer;
+        }
+
+        .transistor:hover {
+            opacity: 0.8;
+        }
+
+        .wire {
+            stroke: #333;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .pmos {
+            fill: #ff6b6b;
+            stroke: #e55555;
+            stroke-width: 2;
+        }
+
+        .nmos {
+            fill: #4ecdc4;
+            stroke: #45b7aa;
+            stroke-width: 2;
+        }
+
+        .label {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            fill: #333;
+            text-anchor: middle;
+        }
+
+        .power-label {
+            font-weight: bold;
+            fill: #d63384;
+        }
+
+        .ground-label {
+            font-weight: bold;
+            fill: #198754;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 CMOS Circuit Generator</h1>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <label for="booleanExpr">Boolean Expression:</label>
+                <input type="text" id="booleanExpr" placeholder="Enter boolean expression (e.g., A + B.C)" value="A + B">
+                
+                <div class="button-group">
+                    <button class="btn-primary" onclick="generateCircuit()">Generate Circuit</button>
+                    <button class="btn-secondary" onclick="clearCircuit()">Clear</button>
+                </div>
+            </div>
+            
+            <div class="examples">
+                <h4>Example Expressions:</h4>
+                <ul>
+                    <li>A + B (OR gate)</li>
+                    <li>A . B or A * B (AND gate)</li>
+                    <li>~A (NOT gate)</li>
+                    <li>A + B . C (OR-AND combination)</li>
+                    <li>~(A + B) (NOR gate)</li>
+                    <li>~(A . B) (NAND gate)</li>
+                    <li>(A + B) . (C + D) (Complex expression)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="circuit-container">
+            <div class="circuit-title">CMOS Circuit Diagram</div>
+            <svg id="circuitSvg" viewBox="0 0 800 600">
+                <text x="400" y="300" text-anchor="middle" fill="#6c757d" font-size="16">
+                    Enter a boolean expression above to generate the CMOS circuit
+                </text>
+            </svg>
+        </div>
+        
+        <div id="output"></div>
+    </div>
+
+    <script>
+        class BooleanParser {
+            constructor() {
+                this.tokens = [];
+                this.position = 0;
+            }
+            
+            tokenize(expression) {
+                const tokens = [];
+                let i = 0;
+                
+                while (i < expression.length) {
+                    const char = expression[i];
+                    
+                    if (/\s/.test(char)) {
+                        i++;
+                        continue;
+                    }
+                    
+                    if (/[A-Za-z]/.test(char)) {
+                        tokens.push({ type: 'VARIABLE', value: char.toUpperCase() });
+                    } else if (char === '~' || char === '!') {
+                        tokens.push({ type: 'NOT', value: '~' });
+                    } else if (char === '+') {
+                        tokens.push({ type: 'OR', value: '+' });
+                    } else if (char === '.' || char === '*') {
+                        tokens.push({ type: 'AND', value: '.' });
+                    } else if (char === '(') {
+                        tokens.push({ type: 'LPAREN', value: '(' });
+                    } else if (char === ')') {
+                        tokens.push({ type: 'RPAREN', value: ')' });
+                    } else {
+                        throw new Error(`Invalid character: ${char}`);
+                    }
+                    
+                    i++;
+                }
+                
+                return tokens;
+            }
+            
+            parse(expression) {
+                this.tokens = this.tokenize(expression);
+                this.position = 0;
+                return this.parseOr();
+            }
+            
+            parseOr() {
+                let left = this.parseAnd();
+                
+                while (this.position < this.tokens.length && this.tokens[this.position].type === 'OR') {
+                    this.position++; // consume OR
+                    const right = this.parseAnd();
+                    left = { type: 'OR', left: left, right: right };
+                }
+                
+                return left;
+            }
+            
+            parseAnd() {
+                let left = this.parseNot();
+                
+                while (this.position < this.tokens.length && 
+                       (this.tokens[this.position].type === 'AND' || 
+                        (this.tokens[this.position].type === 'VARIABLE' || this.tokens[this.position].type === 'LPAREN'))) {
+                    
+                    if (this.tokens[this.position].type === 'AND') {
+                        this.position++; // consume AND
+                    }
+                    
+                    const right = this.parseNot();
+                    left = { type: 'AND', left: left, right: right };
+                }
+                
+                return left;
+            }
+            
+            parseNot() {
+                if (this.position < this.tokens.length && this.tokens[this.position].type === 'NOT') {
+                    this.position++; // consume NOT
+                    const operand = this.parseNot();
+                    return { type: 'NOT', operand: operand };
+                }
+                
+                return this.parsePrimary();
+            }
+            
+            parsePrimary() {
+                if (this.position >= this.tokens.length) {
+                    throw new Error('Unexpected end of expression');
+                }
+                
+                const token = this.tokens[this.position];
+                
+                if (token.type === 'VARIABLE') {
+                    this.position++;
+                    return { type: 'VARIABLE', name: token.value };
+                }
+                
+                if (token.type === 'LPAREN') {
+                    this.position++; // consume LPAREN
+                    const expr = this.parseOr();
+                    
+                    if (this.position >= this.tokens.length || this.tokens[this.position].type !== 'RPAREN') {
+                        throw new Error('Missing closing parenthesis');
+                    }
+                    
+                    this.position++; // consume RPAREN
+                    return expr;
+                }
+                
+                throw new Error(`Unexpected token: ${token.value}`);
+            }
+        }
+
+        class CMOSCircuitGenerator {
+            constructor(svgElement) {
+                this.svg = svgElement;
+                this.width = 800;
+                this.height = 600;
+                this.currentY = 50;
+                this.variables = new Set();
+            }
+            
+            clear() {
+                while (this.svg.firstChild) {
+                    this.svg.removeChild(this.svg.firstChild);
+                }
+                this.currentY = 50;
+                this.variables.clear();
+            }
+            
+            generateCircuit(ast) {
+                this.clear();
+                this.extractVariables(ast);
+                
+                // Draw power supply
+                this.drawLine(350, 30, 450, 30, '#d63384', 3);
+                this.drawText(400, 25, 'VDD', 'power-label');
+                
+                // Draw ground
+                this.drawLine(350, 570, 450, 570, '#198754', 3);
+                this.drawText(400, 585, 'GND', 'ground-label');
+                
+                // Generate PMOS network (pull-up)
+                const pmosY = this.drawPMOSNetwork(ast, 400, 60);
+                
+                // Draw output connection
+                this.drawLine(400, pmosY, 400, pmosY + 30);
+                const outputY = pmosY + 30;
+                
+                // Generate NMOS network (pull-down)
+                const nmosY = this.drawNMOSNetwork(ast, 400, outputY + 30);
+                
+                // Draw output line to ground
+                this.drawLine(400, nmosY, 400, 540);
+                
+                // Draw output label
+                this.drawText(420, outputY + 15, 'OUT', 'label');
+                this.drawCircle(400, outputY + 15, 3, '#333');
+                
+                // Draw input labels
+                let inputX = 50;
+                Array.from(this.variables).sort().forEach(variable => {
+                    this.drawText(inputX, 50, variable, 'label');
+                    this.drawText(inputX, 70, `~${variable}`, 'label');
+                    inputX += 60;
+                });
+                
+                return { pmosY, outputY, nmosY };
+            }
+            
+            extractVariables(ast) {
+                if (ast.type === 'VARIABLE') {
+                    this.variables.add(ast.name);
+                } else if (ast.type === 'NOT') {
+                    this.extractVariables(ast.operand);
+                } else if (ast.type === 'AND' || ast.type === 'OR') {
+                    this.extractVariables(ast.left);
+                    this.extractVariables(ast.right);
+                }
+            }
+            
+            drawPMOSNetwork(ast, x, y) {
+                // For PMOS network, we need the complement of the original expression
+                // OR becomes parallel (series in PMOS), AND becomes series (parallel in PMOS)
+                return this.drawPMOSNode(this.complementAST(ast), x, y);
+            }
+            
+            drawNMOSNetwork(ast, x, y) {
+                // For NMOS network, we use the original expression
+                return this.drawNMOSNode(ast, x, y);
+            }
+            
+            complementAST(ast) {
+                if (ast.type === 'VARIABLE') {
+                    return { type: 'NOT', operand: ast };
+                } else if (ast.type === 'NOT') {
+                    return ast.operand;
+                } else if (ast.type === 'AND') {
+                    return {
+                        type: 'OR',
+                        left: this.complementAST(ast.left),
+                        right: this.complementAST(ast.right)
+                    };
+                } else if (ast.type === 'OR') {
+                    return {
+                        type: 'AND',
+                        left: this.complementAST(ast.left),
+                        right: this.complementAST(ast.right)
+                    };
+                }
+                return ast;
+            }
+            
+            drawPMOSNode(ast, x, y) {
+                if (ast.type === 'VARIABLE' || (ast.type === 'NOT' && ast.operand.type === 'VARIABLE')) {
+                    // Draw single PMOS transistor
+                    const label = ast.type === 'NOT' ? `~${ast.operand.name}` : ast.name;
+                    this.drawTransistor(x, y, 'PMOS', label);
+                    return y + 40;
+                } else if (ast.type === 'AND') {
+                    // Series connection for PMOS
+                    const leftY = this.drawPMOSNode(ast.left, x, y);
+                    this.drawLine(x, leftY, x, leftY + 10);
+                    const rightY = this.drawPMOSNode(ast.right, x, leftY + 10);
+                    return rightY;
+                } else if (ast.type === 'OR') {
+                    // Parallel connection for PMOS
+                    const leftX = x - 40;
+                    const rightX = x + 40;
+                    
+                    // Draw connection lines
+                    this.drawLine(x, y, leftX, y);
+                    this.drawLine(x, y, rightX, y);
+                    
+                    const leftY = this.drawPMOSNode(ast.left, leftX, y + 10);
+                    const rightY = this.drawPMOSNode(ast.right, rightX, y + 10);
+                    
+                    const maxY = Math.max(leftY, rightY);
+                    
+                    // Connect outputs
+                    this.drawLine(leftX, leftY, leftX, maxY + 10);
+                    this.drawLine(rightX, rightY, rightX, maxY + 10);
+                    this.drawLine(leftX, maxY + 10, x, maxY + 10);
+                    this.drawLine(rightX, maxY + 10, x, maxY + 10);
+                    
+                    return maxY + 10;
+                }
+                return y;
+            }
+            
+            drawNMOSNode(ast, x, y) {
+                if (ast.type === 'VARIABLE' || (ast.type === 'NOT' && ast.operand.type === 'VARIABLE')) {
+                    // Draw single NMOS transistor
+                    const label = ast.type === 'NOT' ? `~${ast.operand.name}` : ast.name;
+                    this.drawTransistor(x, y, 'NMOS', label);
+                    return y + 40;
+                } else if (ast.type === 'AND') {
+                    // Series connection for NMOS
+                    const leftY = this.drawNMOSNode(ast.left, x, y);
+                    this.drawLine(x, leftY, x, leftY + 10);
+                    const rightY = this.drawNMOSNode(ast.right, x, leftY + 10);
+                    return rightY;
+                } else if (ast.type === 'OR') {
+                    // Parallel connection for NMOS
+                    const leftX = x - 40;
+                    const rightX = x + 40;
+                    
+                    // Draw connection lines
+                    this.drawLine(x, y, leftX, y);
+                    this.drawLine(x, y, rightX, y);
+                    
+                    const leftY = this.drawNMOSNode(ast.left, leftX, y + 10);
+                    const rightY = this.drawNMOSNode(ast.right, rightX, y + 10);
+                    
+                    const maxY = Math.max(leftY, rightY);
+                    
+                    // Connect outputs
+                    this.drawLine(leftX, leftY, leftX, maxY + 10);
+                    this.drawLine(rightX, rightY, rightX, maxY + 10);
+                    this.drawLine(leftX, maxY + 10, x, maxY + 10);
+                    this.drawLine(rightX, maxY + 10, x, maxY + 10);
+                    
+                    return maxY + 10;
+                } else if (ast.type === 'NOT') {
+                    return this.drawNMOSNode(ast.operand, x, y);
+                }
+                return y;
+            }
+            
+            drawTransistor(x, y, type, label) {
+                const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                group.setAttribute('class', 'transistor');
+                
+                // Draw transistor body
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', x - 15);
+                rect.setAttribute('y', y);
+                rect.setAttribute('width', 30);
+                rect.setAttribute('height', 25);
+                rect.setAttribute('class', type.toLowerCase());
+                rect.setAttribute('rx', 5);
+                group.appendChild(rect);
+                
+                // Draw gate line
+                const gateLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                gateLine.setAttribute('x1', x - 20);
+                gateLine.setAttribute('y1', y + 12.5);
+                gateLine.setAttribute('x2', x - 15);
+                gateLine.setAttribute('y2', y + 12.5);
+                gateLine.setAttribute('class', 'wire');
+                group.appendChild(gateLine);
+                
+                // Draw source/drain connections
+                const topLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                topLine.setAttribute('x1', x);
+                topLine.setAttribute('y1', y - 5);
+                topLine.setAttribute('x2', x);
+                topLine.setAttribute('y2', y);
+                topLine.setAttribute('class', 'wire');
+                group.appendChild(topLine);
+                
+                const bottomLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                bottomLine.setAttribute('x1', x);
+                bottomLine.setAttribute('y1', y + 25);
+                bottomLine.setAttribute('x2', x);
+                bottomLine.setAttribute('y2', y + 30);
+                bottomLine.setAttribute('class', 'wire');
+                group.appendChild(bottomLine);
+                
+                // Add label
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', x - 30);
+                text.setAttribute('y', y + 15);
+                text.setAttribute('class', 'label');
+                text.textContent = label;
+                group.appendChild(text);
+                
+                // Add transistor type label
+                const typeText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                typeText.setAttribute('x', x);
+                typeText.setAttribute('y', y + 18);
+                typeText.setAttribute('class', 'label');
+                typeText.setAttribute('font-size', '8');
+                typeText.textContent = type;
+                group.appendChild(typeText);
+                
+                this.svg.appendChild(group);
+            }
+            
+            drawLine(x1, y1, x2, y2, color = '#333', width = 2) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1);
+                line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2);
+                line.setAttribute('y2', y2);
+                line.setAttribute('stroke', color);
+                line.setAttribute('stroke-width', width);
+                this.svg.appendChild(line);
+            }
+            
+            drawText(x, y, text, className = 'label') {
+                const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textElement.setAttribute('x', x);
+                textElement.setAttribute('y', y);
+                textElement.setAttribute('class', className);
+                textElement.textContent = text;
+                this.svg.appendChild(textElement);
+            }
+            
+            drawCircle(x, y, r, color) {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', x);
+                circle.setAttribute('cy', y);
+                circle.setAttribute('r', r);
+                circle.setAttribute('fill', color);
+                this.svg.appendChild(circle);
+            }
+        }
+
+        let parser = new BooleanParser();
+        let generator = new CMOSCircuitGenerator(document.getElementById('circuitSvg'));
+        
+        function generateCircuit() {
+            const expression = document.getElementById('booleanExpr').value.trim();
+            const output = document.getElementById('output');
+            
+            if (!expression) {
+                showMessage('Please enter a boolean expression.', 'error');
+                return;
+            }
+            
+            try {
+                const ast = parser.parse(expression);
+                generator.generateCircuit(ast);
+                showMessage(`Circuit generated successfully for expression: ${expression}`, 'info');
+            } catch (error) {
+                showMessage(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearCircuit() {
+            generator.clear();
+            document.getElementById('booleanExpr').value = '';
+            document.getElementById('output').innerHTML = '';
+            
+            const svg = document.getElementById('circuitSvg');
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', '400');
+            text.setAttribute('y', '300');
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', '#6c757d');
+            text.setAttribute('font-size', '16');
+            text.textContent = 'Enter a boolean expression above to generate the CMOS circuit';
+            svg.appendChild(text);
+        }
+        
+        function showMessage(message, type) {
+            const output = document.getElementById('output');
+            output.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+        
+        // Allow Enter key to generate circuit
+        document.getElementById('booleanExpr').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateCircuit();
+            }
+        });
+        
+        // Generate initial circuit
+        generateCircuit();
+    </script>
+</body>
+</html>
