@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Family Tree Builder & Visualizer</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #ffffff;
+        min-height: 100vh;
+        color: #1a1a1a;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        text-align: center;
+        color: #1a1a1a;
+        margin-bottom: 40px;
+        padding: 30px 0;
+        border-bottom: 1px solid #e5e5e5;
+      }
+
+      .header h1 {
+        font-size: 2.8em;
+        margin-bottom: 10px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .header p {
+        font-size: 1.1em;
+        color: #666;
+        font-weight: 400;
+      }
+
+      .controls {
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        border: 1px solid #e5e5e5;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      .control-group {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .input-group label {
+        font-weight: 500;
+        color: #1a1a1a;
+        font-size: 0.9em;
+        margin-bottom: 6px;
+      }
+
+      .input-group input,
+      .input-group select {
+        padding: 12px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        background: #ffffff;
+        color: #1a1a1a;
+      }
+
+      .input-group input:focus,
+      .input-group select:focus {
+        outline: none;
+        border-color: #1a1a1a;
+        box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        font-size: 14px;
+        font-family: inherit;
+      }
+
+      .btn-primary {
+        background: #1a1a1a;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #000000;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .btn-secondary {
+        background: #ffffff;
+        color: #1a1a1a;
+        border: 1px solid #d1d5db;
+      }
+
+      .btn-secondary:hover {
+        background: #f9fafb;
+        border-color: #9ca3af;
+        transform: translateY(-1px);
+      }
+
+      .btn-danger {
+        background: #ffffff;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+      }
+
+      .btn-danger:hover {
+        background: #fef2f2;
+        border-color: #fca5a5;
+        transform: translateY(-1px);
+      }
+
+      .animation-controls {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .tree-container {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 40px;
+        min-height: 600px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #e5e5e5;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      .tree-svg {
+        width: 100%;
+        height: 600px;
+        border: 1px solid #f3f4f6;
+        border-radius: 8px;
+        background: #fafafa;
+      }
+
+      .node {
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .node circle {
+        fill: #ffffff;
+        stroke: #1a1a1a;
+        stroke-width: 2px;
+        width: 350px;
+        height: 350px;
+        transition: all 0.2s ease;
+      }
+
+      .node:hover circle {
+        fill: #1a1a1a;
+        stroke-width: 2px;
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15));
+      }
+
+      .node text {
+        font-family: "Inter", "Segoe UI", sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        fill: #1a1a1a;
+        text-anchor: middle;
+        pointer-events: none;
+      }
+
+      .node:hover text {
+        fill: white;
+      }
+
+      .link {
+        fill: none;
+        stroke: #6b7280;
+        stroke-width: 2px;
+        opacity: 0.7;
+        transition: all 0.2s ease;
+      }
+
+      .link:hover {
+        stroke-width: 2px;
+        opacity: 1;
+        stroke: #1a1a1a;
+      }
+
+      .highlight {
+        animation: pulse 1s infinite;
+      }
+
+      .highlight circle {
+        fill: #1a1a1a !important;
+        stroke: #1a1a1a !important;
+        stroke-width: 3px !important;
+        filter: drop-shadow(0 0 12px rgba(0, 0, 0, 0.3));
+      }
+
+      .highlight text {
+        fill: white !important;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .fade-in {
+        animation: slideIn 0.5s ease-out;
+      }
+
+      .info-panel {
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        margin-top: 30px;
+        border: 1px solid #e5e5e5;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      .algorithm-info {
+        display: none;
+        margin-top: 20px;
+        padding: 20px;
+        background: #f9fafb;
+        border-radius: 8px;
+        border-left: 4px solid #1a1a1a;
+      }
+
+      .algorithm-info.active {
+        display: block;
+        animation: slideIn 0.3s ease-out;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .stat-card {
+        background: #1a1a1a;
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        border: 1px solid #e5e5e5;
+      }
+
+      .stat-card h3 {
+        font-size: 1.8em;
+        margin-bottom: 8px;
+        font-weight: 700;
+      }
+
+      .stat-card p {
+        font-size: 0.9em;
+        opacity: 0.8;
+        font-weight: 400;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(26, 26, 26, 0.2);
+        border-radius: 50%;
+        border-top-color: #1a1a1a;
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .control-group {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .animation-controls {
+          justify-content: center;
+        }
+
+        .header h1 {
+          font-size: 2em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Family Tree Builder & Visualizer</h1>
+        <p>Build and analyze your family tree with data structure algorithms</p>
+      </div>
+
+      <div class="controls">
+        <div class="control-group">
+          <div class="input-group">
+            <label for="personName">Person Name</label>
+            <input type="text" id="personName" placeholder="Enter name" />
+          </div>
+          <div class="input-group">
+            <label for="parentName">Parent Name (optional)</label>
+            <input
+              type="text"
+              id="parentName"
+              placeholder="Select parent or leave empty for root"
+            />
+          </div>
+          <div class="input-group">
+            <label for="relationship">Relationship</label>
+            <select id="relationship">
+              <option value="child">Child</option>
+              <option value="spouse">Spouse</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="addPerson()">
+            Add Person
+          </button>
+        </div>
+
+        <div class="control-group">
+          <div class="animation-controls">
+            <button class="btn btn-secondary" onclick="traverseTree('bfs')">
+              BFS Animation
+            </button>
+            <button class="btn btn-secondary" onclick="traverseTree('dfs')">
+              DFS Animation
+            </button>
+            <button
+              class="btn btn-secondary"
+              onclick="traverseTree('preorder')"
+            >
+              Pre-order
+            </button>
+            <button class="btn btn-secondary" onclick="traverseTree('inorder')">
+              In-order
+            </button>
+            <button
+              class="btn btn-secondary"
+              onclick="traverseTree('postorder')"
+            >
+              Post-order
+            </button>
+            <button class="btn btn-danger" onclick="clearTree()">
+              Clear Tree
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tree-container">
+        <svg class="tree-svg" id="treeSvg"></svg>
+      </div>
+
+      <div class="info-panel">
+        <div class="stats">
+          <div class="stat-card">
+            <h3 id="nodeCount">0</h3>
+            <p>Total People</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="treeHeight">0</h3>
+            <p>Tree Height</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="maxWidth">0</h3>
+            <p>Max Generation</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="leafNodes">0</h3>
+            <p>Leaf Nodes</p>
+          </div>
+        </div>
+
+        <div class="algorithm-info" id="algorithmInfo">
+          <h4>Algorithm Information</h4>
+          <p id="algorithmDescription"></p>
+          <div id="traversalOrder"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      class FamilyTreeNode {
+        constructor(name, id = null) {
+          this.name = name;
+          this.id = id || Math.random().toString(36).substr(2, 9);
+          this.children = [];
+          this.parent = null;
+          this.spouse = null;
+          this.x = 0;
+          this.y = 0;
+        }
+
+        addChild(child) {
+          child.parent = this;
+          this.children.push(child);
+        }
+
+        addSpouse(spouse) {
+          this.spouse = spouse;
+          spouse.spouse = this;
+        }
+      }
+
+      class FamilyTree {
+        constructor() {
+          this.root = null;
+          this.nodes = new Map();
+          this.svg = document.getElementById("treeSvg");
+          this.width = 1000;
+          this.height = 600;
+          this.nodeRadius = 25;
+          this.levelHeight = 80;
+          this.nodeSpacing = 120;
+        }
+
+        addPerson(name, parentName = null, relationship = "child") {
+          const newNode = new FamilyTreeNode(name);
+          this.nodes.set(name, newNode);
+
+          if (!parentName && !this.root) {
+            this.root = newNode;
+          } else if (parentName) {
+            const parent = this.nodes.get(parentName);
+            if (parent) {
+              if (relationship === "child") {
+                parent.addChild(newNode);
+              } else if (relationship === "spouse") {
+                parent.addSpouse(newNode);
+              }
+            }
+          }
+
+          this.updateVisualization();
+          this.updateStats();
+          return newNode;
+        }
+
+        calculatePositions() {
+          if (!this.root) return;
+
+          const levels = [];
+          const queue = [{ node: this.root, level: 0 }];
+
+          while (queue.length > 0) {
+            const { node, level } = queue.shift();
+
+            if (!levels[level]) levels[level] = [];
+            levels[level].push(node);
+
+            node.children.forEach((child) => {
+              queue.push({ node: child, level: level + 1 });
+            });
+
+            if (node.spouse && !levels[level].includes(node.spouse)) {
+              levels[level].push(node.spouse);
+            }
+          }
+
+          levels.forEach((levelNodes, level) => {
+            const startX =
+              (this.width - (levelNodes.length - 1) * this.nodeSpacing) / 2;
+            levelNodes.forEach((node, index) => {
+              node.x = startX + index * this.nodeSpacing;
+              node.y = 60 + level * this.levelHeight;
+            });
+          });
+        }
+
+        updateVisualization() {
+          this.calculatePositions();
+          this.svg.innerHTML = "";
+
+          if (!this.root) return;
+
+          const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          this.svg.appendChild(g);
+
+          this.drawConnections(g);
+          this.drawNodes(g);
+        }
+
+        drawConnections(container) {
+          const drawConnection = (parent, child) => {
+            const line = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "path"
+            );
+            const d = `M ${parent.x} ${parent.y + this.nodeRadius} 
+                              Q ${parent.x} ${(parent.y + child.y) / 2} 
+                              ${child.x} ${child.y - this.nodeRadius}`;
+            line.setAttribute("d", d);
+            line.setAttribute("class", "link");
+            container.appendChild(line);
+          };
+
+          const traverse = (node) => {
+            if (node.children) {
+              node.children.forEach((child) => {
+                drawConnection(node, child);
+                traverse(child);
+              });
+            }
+
+            if (node.spouse) {
+              const line = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "line"
+              );
+              line.setAttribute("x1", node.x + this.nodeRadius);
+              line.setAttribute("y1", node.y);
+              line.setAttribute("x2", node.spouse.x - this.nodeRadius);
+              line.setAttribute("y2", node.spouse.y);
+              line.setAttribute("class", "link");
+              line.style.strokeDasharray = "5,5";
+              container.appendChild(line);
+            }
+          };
+
+          if (this.root) traverse(this.root);
+        }
+
+        drawNodes(container) {
+          const allNodes = Array.from(this.nodes.values());
+
+          allNodes.forEach((node) => {
+            const nodeGroup = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "g"
+            );
+            nodeGroup.setAttribute("class", "node fade-in");
+            nodeGroup.setAttribute("data-name", node.name);
+            nodeGroup.style.cursor = "pointer";
+
+            const circle = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "circle"
+            );
+            circle.setAttribute("cx", node.x);
+            circle.setAttribute("cy", node.y);
+            circle.setAttribute("r", this.nodeRadius);
+
+            const text = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "text"
+            );
+            text.setAttribute("x", node.x);
+            text.setAttribute("y", node.y + 5);
+            text.textContent =
+              node.name.length > 8 ? node.name.substr(0, 8) + "..." : node.name;
+
+            nodeGroup.appendChild(circle);
+            nodeGroup.appendChild(text);
+            container.appendChild(nodeGroup);
+
+            nodeGroup.addEventListener("click", () => {
+              document.getElementById("parentName").value = node.name;
+            });
+          });
+        }
+
+        async traverseBFS() {
+          if (!this.root) return [];
+
+          const visited = [];
+          const queue = [this.root];
+
+          while (queue.length > 0) {
+            const node = queue.shift();
+            visited.push(node.name);
+
+            await this.highlightNode(node.name);
+            await this.sleep(800);
+
+            node.children.forEach((child) => queue.push(child));
+            if (node.spouse && !visited.includes(node.spouse.name)) {
+              queue.push(node.spouse);
+            }
+          }
+
+          return visited;
+        }
+
+        async traverseDFS() {
+          if (!this.root) return [];
+
+          const visited = [];
+
+          const dfsHelper = async (node) => {
+            if (!node || visited.includes(node.name)) return;
+
+            visited.push(node.name);
+            await this.highlightNode(node.name);
+            await this.sleep(800);
+
+            for (const child of node.children) {
+              await dfsHelper(child);
+            }
+
+            if (node.spouse && !visited.includes(node.spouse.name)) {
+              await dfsHelper(node.spouse);
+            }
+          };
+
+          await dfsHelper(this.root);
+          return visited;
+        }
+
+        async traversePreOrder() {
+          const visited = [];
+
+          const preOrderHelper = async (node) => {
+            if (!node) return;
+
+            visited.push(node.name);
+            await this.highlightNode(node.name);
+            await this.sleep(800);
+
+            for (const child of node.children) {
+              await preOrderHelper(child);
+            }
+          };
+
+          if (this.root) await preOrderHelper(this.root);
+          return visited;
+        }
+
+        async traverseInOrder() {
+          const visited = [];
+
+          const inOrderHelper = async (node) => {
+            if (!node) return;
+
+            if (node.children.length > 0) {
+              await inOrderHelper(node.children[0]);
+            }
+
+            visited.push(node.name);
+            await this.highlightNode(node.name);
+            await this.sleep(800);
+
+            for (let i = 1; i < node.children.length; i++) {
+              await inOrderHelper(node.children[i]);
+            }
+          };
+
+          if (this.root) await inOrderHelper(this.root);
+          return visited;
+        }
+
+        async traversePostOrder() {
+          const visited = [];
+
+          const postOrderHelper = async (node) => {
+            if (!node) return;
+
+            for (const child of node.children) {
+              await postOrderHelper(child);
+            }
+
+            visited.push(node.name);
+            await this.highlightNode(node.name);
+            await this.sleep(800);
+          };
+
+          if (this.root) await postOrderHelper(this.root);
+          return visited;
+        }
+
+        async highlightNode(name) {
+          const nodeElement = document.querySelector(`[data-name="${name}"]`);
+          if (nodeElement) {
+            nodeElement.classList.add("highlight");
+            setTimeout(() => {
+              nodeElement.classList.remove("highlight");
+            }, 1500);
+          }
+        }
+
+        sleep(ms) {
+          return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        calculateHeight() {
+          if (!this.root) return 0;
+
+          const getHeight = (node) => {
+            if (!node || node.children.length === 0) return 1;
+            return (
+              1 + Math.max(...node.children.map((child) => getHeight(child)))
+            );
+          };
+
+          return getHeight(this.root);
+        }
+
+        calculateMaxWidth() {
+          if (!this.root) return 0;
+
+          const levels = [];
+          const queue = [{ node: this.root, level: 0 }];
+
+          while (queue.length > 0) {
+            const { node, level } = queue.shift();
+
+            if (!levels[level]) levels[level] = 0;
+            levels[level]++;
+
+            node.children.forEach((child) => {
+              queue.push({ node: child, level: level + 1 });
+            });
+          }
+
+          return Math.max(...levels);
+        }
+
+        countLeafNodes() {
+          if (!this.root) return 0;
+
+          let count = 0;
+          const countLeaves = (node) => {
+            if (node.children.length === 0) {
+              count++;
+            } else {
+              node.children.forEach((child) => countLeaves(child));
+            }
+          };
+
+          countLeaves(this.root);
+          return count;
+        }
+
+        updateStats() {
+          document.getElementById("nodeCount").textContent = this.nodes.size;
+          document.getElementById("treeHeight").textContent =
+            this.calculateHeight();
+          document.getElementById("maxWidth").textContent =
+            this.calculateMaxWidth();
+          document.getElementById("leafNodes").textContent =
+            this.countLeafNodes();
+        }
+
+        clear() {
+          this.root = null;
+          this.nodes.clear();
+          this.svg.innerHTML = "";
+          this.updateStats();
+          document.getElementById("algorithmInfo").classList.remove("active");
+        }
+      }
+
+      // Initialize the family tree
+      const familyTree = new FamilyTree();
+
+      // Add sample data
+      function initializeSampleData() {
+        familyTree.addPerson("John Smith");
+        familyTree.addPerson("Mary Smith", "John Smith", "spouse");
+        familyTree.addPerson("Alice Smith", "John Smith", "child");
+        familyTree.addPerson("Bob Smith", "John Smith", "child");
+        familyTree.addPerson("Charlie Smith", "Alice Smith", "child");
+      }
+
+      function addPerson() {
+        const name = document.getElementById("personName").value.trim();
+        const parentName = document.getElementById("parentName").value.trim();
+        const relationship = document.getElementById("relationship").value;
+
+        if (!name) {
+          alert("Please enter a person name");
+          return;
+        }
+
+        if (familyTree.nodes.has(name)) {
+          alert("Person with this name already exists");
+          return;
+        }
+
+        familyTree.addPerson(name, parentName || null, relationship);
+
+        // Clear inputs
+        document.getElementById("personName").value = "";
+        document.getElementById("parentName").value = "";
+      }
+
+      async function traverseTree(algorithm) {
+        const algorithmInfo = document.getElementById("algorithmInfo");
+        const algorithmDescription = document.getElementById(
+          "algorithmDescription"
+        );
+        const traversalOrder = document.getElementById("traversalOrder");
+
+        algorithmInfo.classList.add("active");
+
+        let result = [];
+        let description = "";
+
+        switch (algorithm) {
+          case "bfs":
+            description =
+              "Breadth-First Search (BFS): Visits nodes level by level, exploring all nodes at the current depth before moving to nodes at the next depth level.";
+            result = await familyTree.traverseBFS();
+            break;
+          case "dfs":
+            description =
+              "Depth-First Search (DFS): Visits nodes by going as deep as possible along each branch before backtracking.";
+            result = await familyTree.traverseDFS();
+            break;
+          case "preorder":
+            description =
+              "Pre-order Traversal: Visits the root node first, then recursively visits the left subtree, followed by the right subtree.";
+            result = await familyTree.traversePreOrder();
+            break;
+          case "inorder":
+            description =
+              "In-order Traversal: Recursively visits the left subtree, then the root node, then the right subtree.";
+            result = await familyTree.traverseInOrder();
+            break;
+          case "postorder":
+            description =
+              "Post-order Traversal: Recursively visits the left subtree, then the right subtree, then the root node.";
+            result = await familyTree.traversePostOrder();
+            break;
+        }
+
+        algorithmDescription.textContent = description;
+        traversalOrder.innerHTML = `<strong>Traversal Order:</strong> ${result.join(
+          " → "
+        )}`;
+      }
+
+      function clearTree() {
+        if (confirm("Are you sure you want to clear the entire tree?")) {
+          familyTree.clear();
+        }
+      }
+
+      // Initialize with sample data
+      initializeSampleData();
+    </script>
+  </body>
+</html>
