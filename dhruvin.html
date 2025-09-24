@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airline Reservation System - DSA Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+        }
+
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .panel h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #34495e;
+        }
+
+        .form-group input, .form-group select {
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-success { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        .btn-danger { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .btn-warning { background: linear-gradient(135deg, #f39c12, #e67e22); }
+
+        .flights-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .flight-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .flight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .flight-info h3 {
+            color: #2c3e50;
+            font-size: 1.4em;
+        }
+
+        .flight-route {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .seat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .class-section {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ecf0f1;
+        }
+
+        .economy { background: #e8f8f5; border-color: #27ae60; }
+        .business { background: #fef9e7; border-color: #f39c12; }
+        .first { background: #fdf2e9; border-color: #e67e22; }
+
+        .class-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .seat-count {
+            font-size: 1.5em;
+            margin: 10px 0;
+        }
+
+        .waiting-queue {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .queue-title {
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 8px;
+        }
+
+        .memory-visualization {
+            grid-column: 1 / -1;
+            margin-top: 30px;
+        }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .memory-panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .memory-panel h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.3em;
+        }
+
+        .linked-list-viz {
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            padding: 10px 0;
+            min-height: 80px;
+        }
+
+        .list-node {
+            min-width: 120px;
+            height: 60px;
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .list-node:after {
+            content: '→';
+            position: absolute;
+            right: -12px;
+            font-size: 20px;
+            color: #74b9ff;
+        }
+
+        .list-node:last-child:after {
+            content: '∅';
+            color: #e74c3c;
+        }
+
+        .queue-viz {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            min-height: 70px;
+            overflow-x: auto;
+        }
+
+        .queue-node {
+            min-width: 100px;
+            height: 50px;
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+
+        .queue-pointer {
+            font-size: 12px;
+            color: #636e72;
+            margin: 0 10px;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .passenger-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .passenger-item {
+            background: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .passenger-info {
+            flex: 1;
+        }
+
+        .passenger-id {
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .alert-success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .alert-warning { background: #fff3cd; color: #856404; border-left: 4px solid #ffc107; }
+        .alert-error { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+
+        @media (max-width: 768px) {
+            .control-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .flights-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .memory-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .seat-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✈️ Airline Reservation System</h1>
+            <p>Advanced DSA Implementation with Memory Visualization</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalFlights">0</div>
+                <div class="stat-label">Total Flights</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalPassengers">0</div>
+                <div class="stat-label">Total Passengers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalWaiting">0</div>
+                <div class="stat-label">Waiting Queue</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="memoryNodes">0</div>
+                <div class="stat-label">Memory Nodes</div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <div class="panel">
+                <h2>🛫 Add New Flight</h2>
+                <div class="form-group">
+                    <label for="flightNo">Flight Number:</label>
+                    <input type="number" id="flightNo" placeholder="e.g., 1001">
+                </div>
+                <div class="form-group">
+                    <label for="source">Source:</label>
+                    <input type="text" id="source" placeholder="e.g., New York">
+                </div>
+                <div class="form-group">
+                    <label for="destination">Destination:</label>
+                    <input type="text" id="destination" placeholder="e.g., Los Angeles">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label for="economySeats">Economy:</label>
+                        <input type="number" id="economySeats" value="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="businessSeats">Business:</label>
+                        <input type="number" id="businessSeats" value="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="firstSeats">First Class:</label>
+                        <input type="number" id="firstSeats" value="10">
+                    </div>
+                </div>
+                <button class="btn btn-success" onclick="addFlight()">Add Flight</button>
+            </div>
+
+            <div class="panel">
+                <h2>🎫 Book Ticket</h2>
+                <div class="form-group">
+                    <label for="bookFlightNo">Flight Number:</label>
+                    <select id="bookFlightNo">
+                        <option value="">Select Flight</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="passengerName">Passenger Name:</label>
+                    <input type="text" id="passengerName" placeholder="Enter passenger name">
+                </div>
+                <div class="form-group">
+                    <label for="classType">Class Type:</label>
+                    <select id="classType">
+                        <option value="Economy">Economy</option>
+                        <option value="Business">Business</option>
+                        <option value="First">First Class</option>
+                    </select>
+                </div>
+                <button class="btn btn-success" onclick="bookTicket()">Book Ticket</button>
+            </div>
+
+            <div class="panel">
+                <h2>❌ Cancel Ticket</h2>
+                <div class="form-group">
+                    <label for="cancelFlightNo">Flight Number:</label>
+                    <select id="cancelFlightNo">
+                        <option value="">Select Flight</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="passengerId">Passenger ID:</label>
+                    <input type="number" id="passengerId" placeholder="Enter passenger ID">
+                </div>
+                <button class="btn btn-danger" onclick="cancelTicket()">Cancel Ticket</button>
+            </div>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="flights-container" id="flightsContainer"></div>
+
+        <div class="panel memory-visualization">
+            <h2>🧠 Data Structure Memory Visualization</h2>
+            <div class="memory-grid">
+                <div class="memory-panel">
+                    <h3>Flight Linked List</h3>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Each flight node points to the next flight</p>
+                    <div id="flightLinkedList" class="linked-list-viz"></div>
+                </div>
+
+                <div class="memory-panel">
+                    <h3>Passenger Linked List (Selected Flight)</h3>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Passengers stored as linked list per flight</p>
+                    <div>
+                        <select id="memoryFlightSelect" onchange="updatePassengerMemory()">
+                            <option value="">Select Flight to View</option>
+                        </select>
+                    </div>
+                    <div id="passengerLinkedList" class="linked-list-viz"></div>
+                </div>
+
+                <div class="memory-panel">
+                    <h3>Queue Structures (Waiting Lists)</h3>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">FIFO queues for each class type</p>
+                    <div>
+                        <div style="margin-bottom: 15px;">
+                            <div class="queue-pointer">Economy Queue (FRONT → REAR)</div>
+                            <div id="economyQueue" class="queue-viz"></div>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <div class="queue-pointer">Business Queue (FRONT → REAR)</div>
+                            <div id="businessQueue" class="queue-viz"></div>
+                        </div>
+                        <div>
+                            <div class="queue-pointer">First Class Queue (FRONT → REAR)</div>
+                            <div id="firstQueue" class="queue-viz"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Structures Implementation (Following C code logic)
+        class QueueNode {
+            constructor(name, classType) {
+                this.name = name;
+                this.classType = classType;
+                this.next = null;
+            }
+        }
+
+        class Queue {
+            constructor() {
+                this.front = null;
+                this.rear = null;
+            }
+
+            enqueue(name, classType) {
+                const temp = new QueueNode(name, classType);
+                if (this.rear === null) {
+                    this.front = this.rear = temp;
+                    return;
+                }
+                this.rear.next = temp;
+                this.rear = temp;
+            }
+
+            dequeue() {
+                if (this.front === null) return null;
+                const temp = this.front;
+                this.front = this.front.next;
+                if (this.front === null) this.rear = null;
+                return temp;
+            }
+
+            toArray() {
+                const result = [];
+                let current = this.front;
+                while (current) {
+                    result.push(current);
+                    current = current.next;
+                }
+                return result;
+            }
+
+            length() {
+                let count = 0;
+                let current = this.front;
+                while (current) {
+                    count++;
+                    current = current.next;
+                }
+                return count;
+            }
+        }
+
+        class Passenger {
+            constructor(id, name, seatNo, classType) {
+                this.id = id;
+                this.name = name;
+                this.seatNo = seatNo;
+                this.classType = classType;
+                this.next = null;
+            }
+        }
+
+        class Flight {
+            constructor(flightNo, source, destination, totalEconomy, totalBusiness, totalFirst) {
+                this.flightNo = flightNo;
+                this.source = source;
+                this.destination = destination;
+                this.totalEconomy = totalEconomy;
+                this.totalBusiness = totalBusiness;
+                this.totalFirst = totalFirst;
+                this.bookedEconomy = 0;
+                this.bookedBusiness = 0;
+                this.bookedFirst = 0;
+                this.passengerList = null;
+                this.waitingEconomy = new Queue();
+                this.waitingBusiness = new Queue();
+                this.waitingFirst = new Queue();
+                this.next = null;
+            }
+
+            addPassenger(name, classType, seatNo) {
+                const passenger = new Passenger(Flight.idCounter++, name, seatNo, classType);
+                passenger.next = this.passengerList;
+                this.passengerList = passenger;
+                return passenger;
+            }
+
+            getPassengersArray() {
+                const result = [];
+                let current = this.passengerList;
+                while (current) {
+                    result.push(current);
+                    current = current.next;
+                }
+                return result;
+            }
+
+            removePassenger(passengerId) {
+                let current = this.passengerList;
+                let prev = null;
+
+                while (current && current.id !== passengerId) {
+                    prev = current;
+                    current = current.next;
+                }
+
+                if (!current) return null;
+
+                if (prev) {
+                    prev.next = current.next;
+                } else {
+                    this.passengerList = current.next;
+                }
+
+                return current;
+            }
+        }
+
+        Flight.idCounter = 1;
+
+        // Global variables
+        let flights = null; // Head of flight linked list
+        let selectedMemoryFlight = null;
+
+        // Utility functions
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alertContainer.removeChild(alert);
+            }, 3000);
+        }
+
+        function searchFlight(flightNo) {
+            let current = flights;
+            while (current) {
+                if (current.flightNo === parseInt(flightNo)) {
+                    return current;
+                }
+                current = current.next;
+            }
+            return null;
+        }
+
+        function updateFlightSelectors() {
+            const selectors = ['bookFlightNo', 'cancelFlightNo', 'memoryFlightSelect'];
+            
+            selectors.forEach(id => {
+                const select = document.getElementById(id);
+                select.innerHTML = id === 'memoryFlightSelect' ? 
+                    '<option value="">Select Flight to View</option>' : 
+                    '<option value="">Select Flight</option>';
+                
+                let current = flights;
+                while (current) {
+                    const option = document.createElement('option');
+                    option.value = current.flightNo;
+                    option.textContent = `Flight ${current.flightNo}: ${current.source} → ${current.destination}`;
+                    select.appendChild(option);
+                    current = current.next;
+                }
+            });
+        }
+
+        // Main functions
+        function addFlight() {
+            const flightNo = parseInt(document.getElementById('flightNo').value);
+            const source = document.getElementById('source').value;
+            const destination = document.getElementById('destination').value;
+            const economySeats = parseInt(document.getElementById('economySeats').value);
+            const businessSeats = parseInt(document.getElementById('businessSeats').value);
+            const firstSeats = parseInt(document.getElementById('firstSeats').value);
+
+            if (!flightNo || !source || !destination || !economySeats || !businessSeats || !firstSeats) {
+                showAlert('Please fill all fields!', 'error');
+                return;
+            }
+
+            if (searchFlight(flightNo)) {
+                showAlert('Flight number already exists!', 'error');
+                return;
+            }
+
+            const newFlight = new Flight(flightNo, source, destination, economySeats, businessSeats, firstSeats);
+            newFlight.next = flights;
+            flights = newFlight;
+
+            showAlert(`✅ Flight ${flightNo} added successfully!`, 'success');
+
+            // Clear form
+            document.getElementById('flightNo').value = '';
+            document.getElementById('source').value = '';
+            document.getElementById('destination').value = '';
+
+            updateVisualization();
+        }
+
+        function bookTicket() {
+            const flightNo = document.getElementById('bookFlightNo').value;
+            const passengerName = document.getElementById('passengerName').value;
+            const classType = document.getElementById('classType').value;
+
+            if (!flightNo || !passengerName || !classType) {
+                showAlert('Please fill all fields!', 'error');
+                return;
+            }
+
+            const flight = searchFlight(flightNo);
+            if (!flight) {
+                showAlert('Flight not found!', 'error');
+                return;
+            }
+
+            if (classType === 'Economy') {
+                if (flight.bookedEconomy < flight.totalEconomy) {
+                    flight.bookedEconomy++;
+                    const passenger = flight.addPassenger(passengerName, 'Economy', flight.bookedEconomy);
+                    showAlert(`🎟️ Ticket booked for ${passengerName} (Seat ${passenger.seatNo}, Economy Class)`, 'success');
+                } else {
+                    flight.waitingEconomy.enqueue(passengerName, 'Economy');
+                    showAlert(`⚠️ No Economy seats left, ${passengerName} added to waiting list.`, 'warning');
+                }
+            } else if (classType === 'Business') {
+                if (flight.bookedBusiness < flight.totalBusiness) {
+                    flight.bookedBusiness++;
+                    const passenger = flight.addPassenger(passengerName, 'Business', flight.bookedBusiness);
+                    showAlert(`🎟️ Ticket booked for ${passengerName} (Seat ${passenger.seatNo}, Business Class)`, 'success');
+                } else {
+                    flight.waitingBusiness.enqueue(passengerName, 'Business');
+                    showAlert(`⚠️ No Business seats left, ${passengerName} added to waiting list.`, 'warning');
+                }
+            } else if (classType === 'First') {
+                if (flight.bookedFirst < flight.totalFirst) {
+                    flight.bookedFirst++;
+                    const passenger = flight.addPassenger(passengerName, 'First', flight.bookedFirst);
+                    showAlert(`🎟️ Ticket booked for ${passengerName} (Seat ${passenger.seatNo}, First Class)`, 'success');
+                } else {
+                    flight.waitingFirst.enqueue(passengerName, 'First');
+                    showAlert(`⚠️ No First Class seats left, ${passengerName} added to waiting list.`, 'warning');
+                }
+            }
+
+            document.getElementById('passengerName').value = '';
+            updateVisualization();
+        }
+
+        function cancelTicket() {
+            const flightNo = document.getElementById('cancelFlightNo').value;
+            const passengerId = parseInt(document.getElementById('passengerId').value);
+
+            if (!flightNo || !passengerId) {
+                showAlert('Please fill all fields!', 'error');
+                return;
+            }
+
+            const flight = searchFlight(flightNo);
+            if (!flight) {
+                showAlert('Flight not found!', 'error');
+                return;
+            }
+
+            const passenger = flight.removePassenger(passengerId);
+            if (!passenger) {
+                showAlert(`❌ Passenger ID ${passengerId} not found.`, 'error');
+                return;
+            }
+
+            showAlert(`❌ Ticket cancelled for ${passenger.name} (ID:${passenger.id})`, 'success');
+
+            // Free seat and check waiting list
+            if (passenger.classType === 'Economy') {
+                flight.bookedEconomy--;
+                const nextPassenger = flight.waitingEconomy.dequeue();
+                if (nextPassenger) {
+                    flight.bookedEconomy++;
+                    const newPassenger = flight.addPassenger(nextPassenger.name, 'Economy', flight.bookedEconomy);
+                    showAlert(`🎟️ ${nextPassenger.name} moved from waiting list to seat ${newPassenger.seatNo}`, 'success');
+                }
+            } else if (passenger.classType === 'Business') {
+                flight.bookedBusiness--;
+                const nextPassenger = flight.waitingBusiness.dequeue();
+                if (nextPassenger) {
+                    flight.bookedBusiness++;
+                    const newPassenger = flight.addPassenger(nextPassenger.name, 'Business', flight.bookedBusiness);
+                    showAlert(`🎟️ ${nextPassenger.name} moved from waiting list to seat ${newPassenger.seatNo}`, 'success');
+                }
+            } else if (passenger.classType === 'First') {
+                flight.bookedFirst--;
+                const nextPassenger = flight.waitingFirst.dequeue();
+                if (nextPassenger) {
+                    flight.bookedFirst++;
+                    const newPassenger = flight.addPassenger(nextPassenger.name, 'First', flight.bookedFirst);
+                    showAlert(`🎟️ ${nextPassenger.name} moved from waiting list to seat ${newPassenger.seatNo}`, 'success');
+                }
+            }
+
+            document.getElementById('passengerId').value = '';
+            updateVisualization();
+        }
+
+        function updateVisualization() {
+            updateFlightCards();
+            updateFlightSelectors();
+            updateMemoryVisualization();
+            updateStats();
+        }
+
+        function updateFlightCards() {
+            const container = document.getElementById('flightsContainer');
+            container.innerHTML = '';
+
+            if (!flights) {
+                container.innerHTML = '<div class="empty-state">No flights available. Add a flight to get started!</div>';
+                return;
+            }
+
+            let current = flights;
+            while (current) {
+                const passengers = current.getPassengersArray();
+                const card = document.createElement('div');
+                card.className = 'flight-card';
+                
+                card.innerHTML = `
+                    <div class="flight-header">
+                        <div class="flight-info">
+                            <h3>Flight ${current.flightNo}</h3>
+                            <div class="flight-route">${current.source} → ${current.destination}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="seat-grid">
+                        <div class="class-section economy">
+                            <div class="class-title">Economy</div>
+                            <div class="seat-count">${current.bookedEconomy}/${current.totalEconomy}</div>
+                            <div style="font-size: 12px;">Available: ${current.totalEconomy - current.bookedEconomy}</div>
+                            ${current.waitingEconomy.length() > 0 ? `
+                                <div class="waiting-queue">
+                                    <div class="queue-title">Waiting: ${current.waitingEconomy.length()}</div>
+                                    <div style="font-size: 11px;">${current.waitingEconomy.toArray().map(p => p.name).join(', ')}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="class-section business">
+                            <div class="class-title">Business</div>
+                            <div class="seat-count">${current.bookedBusiness}/${current.totalBusiness}</div>
+                            <div style="font-size: 12px;">Available: ${current.totalBusiness - current.bookedBusiness}</div>
+                            ${current.waitingBusiness.length() > 0 ? `
+                                <div class="waiting-queue">
+                                    <div class="queue-title">Waiting: ${current.waitingBusiness.length()}</div>
+                                    <div style="font-size: 11px;">${current.waitingBusiness.toArray().map(p => p.name).join(', ')}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="class-section first">
+                            <div class="class-title">First Class</div>
+                            <div class="seat-count">${current.bookedFirst}/${current.totalFirst}</div>
+                            <div style="font-size: 12px;">Available: ${current.totalFirst - current.bookedFirst}</div>
+                            ${current.waitingFirst.length() > 0 ? `
+                                <div class="waiting-queue">
+                                    <div class="queue-title">Waiting: ${current.waitingFirst.length()}</div>
+                                    <div style="font-size: 11px;">${current.waitingFirst.toArray().map(p => p.name).join(', ')}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <div class="passenger-list">
+                        <div style="font-weight: bold; margin-bottom: 10px; color: #2c3e50;">
+                            Passengers (${passengers.length}):
+                        </div>
+                        ${passengers.length > 0 ? passengers.map(passenger => `
+                            <div class="passenger-item">
+                                <div class="passenger-info">
+                                    <strong>${passenger.name}</strong><br>
+                                    <small>Seat ${passenger.seatNo} • ${passenger.classType} Class</small>
+                                </div>
+                                <div class="passenger-id">ID: ${passenger.id}</div>
+                            </div>
+                        `).join('') : '<div class="empty-state">No passengers booked</div>'}
+                    </div>
+                `;
+                
+                container.appendChild(card);
+                current = current.next;
+            }
+        }
+
+        function updateMemoryVisualization() {
+            updateFlightLinkedList();
+            updatePassengerMemory();
+            updateQueueVisualization();
+        }
+
+        function updateFlightLinkedList() {
+            const container = document.getElementById('flightLinkedList');
+            container.innerHTML = '';
+
+            if (!flights) {
+                container.innerHTML = '<div style="color: #666; font-style: italic;">No flights in memory</div>';
+                return;
+            }
+
+            let current = flights;
+            while (current) {
+                const node = document.createElement('div');
+                node.className = 'list-node';
+                node.innerHTML = `
+                    <div>Flight ${current.flightNo}</div>
+                    <div style="font-size: 10px;">${current.source}-${current.destination}</div>
+                `;
+                node.title = `Flight ${current.flightNo}: ${current.source} → ${current.destination}`;
+                container.appendChild(node);
+                current = current.next;
+            }
+        }
+
+        function updatePassengerMemory() {
+            const flightNo = document.getElementById('memoryFlightSelect').value;
+            const container = document.getElementById('passengerLinkedList');
+            container.innerHTML = '';
+
+            if (!flightNo) {
+                container.innerHTML = '<div style="color: #666; font-style: italic;">Select a flight to view passenger memory</div>';
+                return;
+            }
+
+            const flight = searchFlight(flightNo);
+            if (!flight || !flight.passengerList) {
+                container.innerHTML = '<div style="color: #666; font-style: italic;">No passengers in memory for this flight</div>';
+                return;
+            }
+
+            selectedMemoryFlight = flight;
+            let current = flight.passengerList;
+            while (current) {
+                const node = document.createElement('div');
+                node.className = 'list-node';
+                node.innerHTML = `
+                    <div>ID: ${current.id}</div>
+                    <div style="font-size: 10px;">${current.name}</div>
+                    <div style="font-size: 9px;">${current.classType}</div>
+                `;
+                node.title = `${current.name} - Seat ${current.seatNo} (${current.classType})`;
+                container.appendChild(node);
+                current = current.next;
+            }
+        }
+
+        function updateQueueVisualization() {
+            const queues = [
+                { id: 'economyQueue', queue: null, name: 'Economy' },
+                { id: 'businessQueue', queue: null, name: 'Business' },
+                { id: 'firstQueue', queue: null, name: 'First' }
+            ];
+
+            // Combine all queues from all flights
+            let current = flights;
+            const combinedQueues = {
+                economy: [],
+                business: [],
+                first: []
+            };
+
+            while (current) {
+                combinedQueues.economy.push(...current.waitingEconomy.toArray());
+                combinedQueues.business.push(...current.waitingBusiness.toArray());
+                combinedQueues.first.push(...current.waitingFirst.toArray());
+                current = current.next;
+            }
+
+            // Update Economy Queue
+            const economyContainer = document.getElementById('economyQueue');
+            economyContainer.innerHTML = '';
+            if (combinedQueues.economy.length === 0) {
+                economyContainer.innerHTML = '<div style="color: #666; font-style: italic;">Queue is empty</div>';
+            } else {
+                combinedQueues.economy.forEach(passenger => {
+                    const node = document.createElement('div');
+                    node.className = 'queue-node';
+                    node.innerHTML = passenger.name.split(' ')[0];
+                    node.title = passenger.name;
+                    economyContainer.appendChild(node);
+                });
+            }
+
+            // Update Business Queue
+            const businessContainer = document.getElementById('businessQueue');
+            businessContainer.innerHTML = '';
+            if (combinedQueues.business.length === 0) {
+                businessContainer.innerHTML = '<div style="color: #666; font-style: italic;">Queue is empty</div>';
+            } else {
+                combinedQueues.business.forEach(passenger => {
+                    const node = document.createElement('div');
+                    node.className = 'queue-node';
+                    node.innerHTML = passenger.name.split(' ')[0];
+                    node.title = passenger.name;
+                    businessContainer.appendChild(node);
+                });
+            }
+
+            // Update First Class Queue
+            const firstContainer = document.getElementById('firstQueue');
+            firstContainer.innerHTML = '';
+            if (combinedQueues.first.length === 0) {
+                firstContainer.innerHTML = '<div style="color: #666; font-style: italic;">Queue is empty</div>';
+            } else {
+                combinedQueues.first.forEach(passenger => {
+                    const node = document.createElement('div');
+                    node.className = 'queue-node';
+                    node.innerHTML = passenger.name.split(' ')[0];
+                    node.title = passenger.name;
+                    firstContainer.appendChild(node);
+                });
+            }
+        }
+
+        function updateStats() {
+            // Count total flights
+            let flightCount = 0;
+            let passengerCount = 0;
+            let waitingCount = 0;
+            let memoryNodes = 0;
+
+            let current = flights;
+            while (current) {
+                flightCount++;
+                memoryNodes++; // Flight node
+
+                // Count passengers
+                let passengerCurrent = current.passengerList;
+                while (passengerCurrent) {
+                    passengerCount++;
+                    memoryNodes++; // Passenger node
+                    passengerCurrent = passengerCurrent.next;
+                }
+
+                // Count waiting passengers
+                waitingCount += current.waitingEconomy.length();
+                waitingCount += current.waitingBusiness.length();
+                waitingCount += current.waitingFirst.length();
+                
+                memoryNodes += current.waitingEconomy.length();
+                memoryNodes += current.waitingBusiness.length();
+                memoryNodes += current.waitingFirst.length();
+
+                current = current.next;
+            }
+
+            document.getElementById('totalFlights').textContent = flightCount;
+            document.getElementById('totalPassengers').textContent = passengerCount;
+            document.getElementById('totalWaiting').textContent = waitingCount;
+            document.getElementById('memoryNodes').textContent = memoryNodes;
+        }
+
+        // Initialize the application
+        function initialize() {
+            // Add some sample data for demonstration
+            setTimeout(() => {
+                // Sample flights
+                document.getElementById('flightNo').value = '1001';
+                document.getElementById('source').value = 'New York';
+                document.getElementById('destination').value = 'Los Angeles';
+                document.getElementById('economySeats').value = '50';
+                document.getElementById('businessSeats').value = '20';
+                document.getElementById('firstSeats').value = '10';
+                addFlight();
+
+                document.getElementById('flightNo').value = '1002';
+                document.getElementById('source').value = 'Chicago';
+                document.getElementById('destination').value = 'Miami';
+                document.getElementById('economySeats').value = '40';
+                document.getElementById('businessSeats').value = '15';
+                document.getElementById('firstSeats').value = '8';
+                addFlight();
+
+                // Sample bookings
+                setTimeout(() => {
+                    const samplePassengers = [
+                        { flight: '1001', name: 'John Smith', class: 'Economy' },
+                        { flight: '1001', name: 'Alice Johnson', class: 'Business' },
+                        { flight: '1001', name: 'Bob Wilson', class: 'First' },
+                        { flight: '1002', name: 'Carol Davis', class: 'Economy' },
+                        { flight: '1002', name: 'David Brown', class: 'Business' }
+                    ];
+
+                    samplePassengers.forEach((passenger, index) => {
+                        setTimeout(() => {
+                            document.getElementById('bookFlightNo').value = passenger.flight;
+                            document.getElementById('passengerName').value = passenger.name;
+                            document.getElementById('classType').value = passenger.class;
+                            bookTicket();
+                        }, index * 500);
+                    });
+                }, 1000);
+            }, 500);
+
+            updateVisualization();
+        }
+
+        // Start the application
+        initialize();
+    </script>
+</body>
+</html>
