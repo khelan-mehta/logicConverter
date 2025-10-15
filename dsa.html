@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Family Tree Builder & Visualizer</title>
+    <title>Simple Family Tree Builder</title>
     <style>
       * {
         margin: 0;
@@ -76,8 +76,7 @@
         margin-bottom: 6px;
       }
 
-      .input-group input,
-      .input-group select {
+      .input-group input {
         padding: 12px 16px;
         border: 1px solid #d1d5db;
         border-radius: 8px;
@@ -87,8 +86,7 @@
         color: #1a1a1a;
       }
 
-      .input-group input:focus,
-      .input-group select:focus {
+      .input-group input:focus {
         outline: none;
         border-color: #1a1a1a;
         box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
@@ -174,8 +172,6 @@
         fill: #ffffff;
         stroke: #1a1a1a;
         stroke-width: 2px;
-        width: 350px;
-        height: 350px;
         transition: all 0.2s ease;
       }
 
@@ -303,22 +299,6 @@
         font-weight: 400;
       }
 
-      .loading {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        border: 2px solid rgba(26, 26, 26, 0.2);
-        border-radius: 50%;
-        border-top-color: #1a1a1a;
-        animation: spin 1s ease-in-out infinite;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
       @media (max-width: 768px) {
         .control-group {
           flex-direction: column;
@@ -338,8 +318,8 @@
   <body>
     <div class="container">
       <div class="header">
-        <h1>Family Tree Builder & Visualizer</h1>
-        <p>Build and analyze your family tree with data structure algorithms</p>
+        <h1>Simple Family Tree Builder</h1>
+        <p>Build your family tree and visualize traversal algorithms</p>
       </div>
 
       <div class="controls">
@@ -353,15 +333,8 @@
             <input
               type="text"
               id="parentName"
-              placeholder="Select parent or leave empty for root"
+              placeholder="Leave empty for root person"
             />
-          </div>
-          <div class="input-group">
-            <label for="relationship">Relationship</label>
-            <select id="relationship">
-              <option value="child">Child</option>
-              <option value="spouse">Spouse</option>
-            </select>
           </div>
           <button class="btn btn-primary" onclick="addPerson()">
             Add Person
@@ -370,26 +343,20 @@
 
         <div class="control-group">
           <div class="animation-controls">
-            <button class="btn btn-secondary" onclick="traverseTree('bfs')">
-              BFS Animation
-            </button>
-            <button class="btn btn-secondary" onclick="traverseTree('dfs')">
-              DFS Animation
-            </button>
             <button
               class="btn btn-secondary"
               onclick="traverseTree('preorder')"
             >
-              Pre-order
+              Pre-order Traversal
             </button>
             <button class="btn btn-secondary" onclick="traverseTree('inorder')">
-              In-order
+              In-order Traversal
             </button>
             <button
               class="btn btn-secondary"
               onclick="traverseTree('postorder')"
             >
-              Post-order
+              Post-order Traversal
             </button>
             <button class="btn btn-danger" onclick="clearTree()">
               Clear Tree
@@ -413,17 +380,13 @@
             <p>Tree Height</p>
           </div>
           <div class="stat-card">
-            <h3 id="maxWidth">0</h3>
-            <p>Max Generation</p>
-          </div>
-          <div class="stat-card">
             <h3 id="leafNodes">0</h3>
             <p>Leaf Nodes</p>
           </div>
         </div>
 
         <div class="algorithm-info" id="algorithmInfo">
-          <h4>Algorithm Information</h4>
+          <h4>Traversal Information</h4>
           <p id="algorithmDescription"></p>
           <div id="traversalOrder"></div>
         </div>
@@ -432,12 +395,10 @@
 
     <script>
       class FamilyTreeNode {
-        constructor(name, id = null) {
+        constructor(name) {
           this.name = name;
-          this.id = id || Math.random().toString(36).substr(2, 9);
           this.children = [];
           this.parent = null;
-          this.spouse = null;
           this.x = 0;
           this.y = 0;
         }
@@ -445,11 +406,6 @@
         addChild(child) {
           child.parent = this;
           this.children.push(child);
-        }
-
-        addSpouse(spouse) {
-          this.spouse = spouse;
-          spouse.spouse = this;
         }
       }
 
@@ -465,7 +421,7 @@
           this.nodeSpacing = 120;
         }
 
-        addPerson(name, parentName = null, relationship = "child") {
+        addPerson(name, parentName = null) {
           const newNode = new FamilyTreeNode(name);
           this.nodes.set(name, newNode);
 
@@ -474,11 +430,7 @@
           } else if (parentName) {
             const parent = this.nodes.get(parentName);
             if (parent) {
-              if (relationship === "child") {
-                parent.addChild(newNode);
-              } else if (relationship === "spouse") {
-                parent.addSpouse(newNode);
-              }
+              parent.addChild(newNode);
             }
           }
 
@@ -502,10 +454,6 @@
             node.children.forEach((child) => {
               queue.push({ node: child, level: level + 1 });
             });
-
-            if (node.spouse && !levels[level].includes(node.spouse)) {
-              levels[level].push(node.spouse);
-            }
           }
 
           levels.forEach((levelNodes, level) => {
@@ -552,20 +500,6 @@
                 traverse(child);
               });
             }
-
-            if (node.spouse) {
-              const line = document.createElementNS(
-                "http://www.w3.org/2000/svg",
-                "line"
-              );
-              line.setAttribute("x1", node.x + this.nodeRadius);
-              line.setAttribute("y1", node.y);
-              line.setAttribute("x2", node.spouse.x - this.nodeRadius);
-              line.setAttribute("y2", node.spouse.y);
-              line.setAttribute("class", "link");
-              line.style.strokeDasharray = "5,5";
-              container.appendChild(line);
-            }
           };
 
           if (this.root) traverse(this.root);
@@ -608,53 +542,6 @@
               document.getElementById("parentName").value = node.name;
             });
           });
-        }
-
-        async traverseBFS() {
-          if (!this.root) return [];
-
-          const visited = [];
-          const queue = [this.root];
-
-          while (queue.length > 0) {
-            const node = queue.shift();
-            visited.push(node.name);
-
-            await this.highlightNode(node.name);
-            await this.sleep(800);
-
-            node.children.forEach((child) => queue.push(child));
-            if (node.spouse && !visited.includes(node.spouse.name)) {
-              queue.push(node.spouse);
-            }
-          }
-
-          return visited;
-        }
-
-        async traverseDFS() {
-          if (!this.root) return [];
-
-          const visited = [];
-
-          const dfsHelper = async (node) => {
-            if (!node || visited.includes(node.name)) return;
-
-            visited.push(node.name);
-            await this.highlightNode(node.name);
-            await this.sleep(800);
-
-            for (const child of node.children) {
-              await dfsHelper(child);
-            }
-
-            if (node.spouse && !visited.includes(node.spouse.name)) {
-              await dfsHelper(node.spouse);
-            }
-          };
-
-          await dfsHelper(this.root);
-          return visited;
         }
 
         async traversePreOrder() {
@@ -745,26 +632,6 @@
           return getHeight(this.root);
         }
 
-        calculateMaxWidth() {
-          if (!this.root) return 0;
-
-          const levels = [];
-          const queue = [{ node: this.root, level: 0 }];
-
-          while (queue.length > 0) {
-            const { node, level } = queue.shift();
-
-            if (!levels[level]) levels[level] = 0;
-            levels[level]++;
-
-            node.children.forEach((child) => {
-              queue.push({ node: child, level: level + 1 });
-            });
-          }
-
-          return Math.max(...levels);
-        }
-
         countLeafNodes() {
           if (!this.root) return 0;
 
@@ -785,8 +652,6 @@
           document.getElementById("nodeCount").textContent = this.nodes.size;
           document.getElementById("treeHeight").textContent =
             this.calculateHeight();
-          document.getElementById("maxWidth").textContent =
-            this.calculateMaxWidth();
           document.getElementById("leafNodes").textContent =
             this.countLeafNodes();
         }
@@ -806,13 +671,11 @@
       // Add sample data
       function initializeSampleData() {
         familyTree.addPerson("Khelan Mehta");
-        
       }
 
       function addPerson() {
         const name = document.getElementById("personName").value.trim();
         const parentName = document.getElementById("parentName").value.trim();
-        const relationship = document.getElementById("relationship").value;
 
         if (!name) {
           alert("Please enter a person name");
@@ -824,7 +687,7 @@
           return;
         }
 
-        familyTree.addPerson(name, parentName || null, relationship);
+        familyTree.addPerson(name, parentName || null);
 
         // Clear inputs
         document.getElementById("personName").value = "";
@@ -844,29 +707,19 @@
         let description = "";
 
         switch (algorithm) {
-          case "bfs":
-            description =
-              "Breadth-First Search (BFS): Visits nodes level by level, exploring all nodes at the current depth before moving to nodes at the next depth level.";
-            result = await familyTree.traverseBFS();
-            break;
-          case "dfs":
-            description =
-              "Depth-First Search (DFS): Visits nodes by going as deep as possible along each branch before backtracking.";
-            result = await familyTree.traverseDFS();
-            break;
           case "preorder":
             description =
-              "Pre-order Traversal: Visits the root node first, then recursively visits the left subtree, followed by the right subtree.";
+              "Pre-order Traversal: Visit the parent first, then visit all children from left to right.";
             result = await familyTree.traversePreOrder();
             break;
           case "inorder":
             description =
-              "In-order Traversal: Recursively visits the left subtree, then the root node, then the right subtree.";
+              "In-order Traversal: Visit the first child, then the parent, then the remaining children.";
             result = await familyTree.traverseInOrder();
             break;
           case "postorder":
             description =
-              "Post-order Traversal: Recursively visits the left subtree, then the right subtree, then the root node.";
+              "Post-order Traversal: Visit all children first from left to right, then visit the parent.";
             result = await familyTree.traversePostOrder();
             break;
         }
